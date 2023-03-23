@@ -8,11 +8,12 @@ import com.github.markozajc.akiwrapper.core.exceptions.ServerNotFoundException;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
@@ -50,18 +51,14 @@ public class AkiScreen extends UseTextureManagerScreen {
 
     @Override
     protected void init() {
-        this.correctButton = this.addDrawableChild(new ButtonWidget(0, this.height - 80, 20, 20, PREVIOUS_QUESTION, button -> this.undo(), (button, matrices, mouseX, mouseY) -> {
-            if (button.active) {
-                AkiScreen.this.renderOrderedTooltip(matrices, AkiScreen.this.client.textRenderer.wrapLines(PREVIOUS_QUESTION_TOOLTIP, Math.max(AkiScreen.this.width / 2 - 43, 170)), mouseX, mouseY);
-            }
-        }));
-        this.addDrawableChild(new ButtonWidget(0, this.height - 60, this.width / 2, 20, PROBABLY, p_93751_ -> this.answer(Akiwrapper.Answer.PROBABLY)));
-        this.addDrawableChild(new ButtonWidget(this.width / 2, this.height - 60, this.width / 2, 20, PROBABLY_NOT, p_93751_ -> this.answer(Akiwrapper.Answer.PROBABLY_NOT)));
-        this.addDrawableChild(new ButtonWidget(0, this.height - 40, this.width / 3, 20, YES, p_93751_ -> this.answer(Akiwrapper.Answer.YES)));
-        this.addDrawableChild(new ButtonWidget(this.width / 3, this.height - 40, this.width / 3, 20, DONT_KNOW, p_93751_ -> this.answer(Akiwrapper.Answer.DONT_KNOW)));
-        this.addDrawableChild(new ButtonWidget(this.width * 2 / 3, this.height - 40, this.width / 3, 20, NO, p_93751_ -> this.answer(Akiwrapper.Answer.NO)));
-        this.addDrawableChild(new ButtonWidget(0, this.height - 20, this.width / 2, 20, EXIT, p_93751_ -> this.exit()));
-        this.addDrawableChild(new ButtonWidget(this.width / 2, this.height - 20, this.width / 2, 20, BACK, p_93751_ -> this.close()));
+        this.correctButton = this.addDrawableChild(ButtonWidget.builder(PREVIOUS_QUESTION, button -> this.undo()).dimensions(0, this.height - 80, 20, 20).tooltip(Tooltip.of(PREVIOUS_QUESTION_TOOLTIP)).build());
+        this.addDrawableChild(ButtonWidget.builder(PROBABLY, p_93751_ -> this.answer(Akiwrapper.Answer.PROBABLY)).dimensions(0, this.height - 60, this.width / 2, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(PROBABLY_NOT, p_93751_ -> this.answer(Akiwrapper.Answer.PROBABLY_NOT)).dimensions(this.width / 2, this.height - 60, this.width / 2, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(YES, p_93751_ -> this.answer(Akiwrapper.Answer.YES)).dimensions(0, this.height - 40, this.width / 3, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(DONT_KNOW, p_93751_ -> this.answer(Akiwrapper.Answer.DONT_KNOW)).dimensions(this.width / 3, this.height - 40, this.width / 3, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(NO, p_93751_ -> this.answer(Akiwrapper.Answer.NO)).dimensions(this.width * 2 / 3, this.height - 40, this.width / 3, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(EXIT, p_93751_ -> this.exit()).dimensions(0, this.height - 20, this.width / 2, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(BACK, p_93751_ -> this.close()).dimensions(this.width / 2, this.height - 20, this.width / 2, 20).build());
 
         if (this.checkLocked()) {
             this.lock();
@@ -103,10 +100,10 @@ public class AkiScreen extends UseTextureManagerScreen {
         this.curEmotion.renderEmotion(this.textureManager, p_96562_, this.width, this.height, 0, 0);
 
         if (this.question != null) {
-            drawCenteredText(p_96562_, this.textRenderer, new TranslatableText(AkiCraft.MOD_ID + ".qnum", this.question.getStep() + 1), this.width / 2, (this.height - 60) / 2 - 20, 16777215);
-            drawCenteredText(p_96562_, this.textRenderer, this.question.getQuestion(), this.width / 2, (this.height - 60) / 2, 16777215);
+            drawCenteredTextWithShadow(p_96562_, this.textRenderer, Text.translatable(AkiCraft.MOD_ID + ".qnum", this.question.getStep() + 1), this.width / 2, (this.height - 60) / 2 - 20, 16777215);
+            drawCenteredTextWithShadow(p_96562_, this.textRenderer, this.question.getQuestion(), this.width / 2, (this.height - 60) / 2, 16777215);
         } else {
-            drawCenteredText(p_96562_, this.textRenderer, LOADING, this.width / 2, (this.height - 60) / 2, 16777215);
+            drawCenteredTextWithShadow(p_96562_, this.textRenderer, LOADING, this.width / 2, (this.height - 60) / 2, 16777215);
         }
 
         this.renderProgressBar(p_96562_);
@@ -114,7 +111,7 @@ public class AkiScreen extends UseTextureManagerScreen {
     }
 
     private void renderProgressBar(MatrixStack p_96562_) {
-        drawCenteredText(p_96562_, this.textRenderer, String.format("%.2f%%", this.curProgress), (this.width + 20) / 2, this.height - 90, 16777215);
+        drawCenteredTextWithShadow(p_96562_, this.textRenderer, String.format("%.2f%%", this.curProgress), (this.width + 20) / 2, this.height - 90, 16777215);
         int minY = this.height - 80;
         int maxY = minY + 20;
         int i = MathHelper.ceil((float) (this.width - 20 - 2 - 2) * this.curProgress * 0.01);

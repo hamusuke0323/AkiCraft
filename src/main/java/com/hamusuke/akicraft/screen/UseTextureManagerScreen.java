@@ -15,7 +15,7 @@ public abstract class UseTextureManagerScreen extends Screen implements RelatedT
         this.textureManager = AkiCraft.getInstance().textureManager;
     }
 
-    public static Dimension wrapImageSizeToMin(Dimension imageSize, Dimension boundary) {
+    public static Dimension wrapImageSize(Dimension imageSize, Dimension boundary) {
         double ratio = Math.min(boundary.getWidth() / imageSize.getWidth(), boundary.getHeight() / imageSize.getHeight());
         return new Dimension((int) (imageSize.width * ratio), (int) (imageSize.height * ratio));
     }

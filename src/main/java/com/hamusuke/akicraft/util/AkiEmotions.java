@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import static com.hamusuke.akicraft.screen.UseTextureManagerScreen.wrapImageSizeToMin;
+import static com.hamusuke.akicraft.screen.UseTextureManagerScreen.wrapImageSize;
 import static net.minecraft.client.gui.DrawableHelper.drawTexture;
 
 public class AkiEmotions {
@@ -50,7 +50,7 @@ public class AkiEmotions {
         public void renderEmotion(TextureManager textureManager, MatrixStack matrices, int width, int height, int x, int y) {
             if (this.isRenderable()) {
                 RenderSystem.setShaderTexture(0, textureManager.bindTexture(this.getImg()).getGlId());
-                var d = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(width, (int) (height * 0.9D)));
+                var d = wrapImageSize(AkiEmotions.SIZE, new Dimension(width, (int) (height * 0.9D)));
                 drawTexture(matrices, x, (int) (y - height * 0.1D), 0, 0, d.width, d.height, d.width, d.height);
             }
         }

@@ -25,9 +25,9 @@ public class AkiGameResultScreen extends UseTextureManagerScreen {
 
     @Override
     protected void init() {
-        this.addDrawableChild(new ButtonWidget(0, this.height - 20, this.width / 3, 20, REPLAY, button -> this.restart()));
-        this.addDrawableChild(new ButtonWidget(this.width / 3, this.height - 20, this.width / 3, 20, EXIT, p_93751_ -> this.exit()));
-        this.addDrawableChild(new ButtonWidget(this.width * 2 / 3, this.height - 20, this.width / 3, 20, BACK, button -> this.close()));
+        this.addDrawableChild(ButtonWidget.builder(REPLAY, button -> this.restart()).dimensions(0, this.height - 20, this.width / 3, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(EXIT, p_93751_ -> this.exit()).dimensions(this.width / 3, this.height - 20, this.width / 3, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(BACK, button -> this.close()).dimensions(this.width * 2 / 3, this.height - 20, this.width / 3, 20).build());
     }
 
     @Override
@@ -37,11 +37,11 @@ public class AkiGameResultScreen extends UseTextureManagerScreen {
         this.emotion.renderEmotion(this.textureManager, matrices, this.width, this.height, 0, this.height / 8);
 
         if (this.guess != null) {
-            drawCenteredText(matrices, this.textRenderer, WIN, this.width / 2, this.height / 2 - 20, 16777215);
-            drawCenteredText(matrices, this.textRenderer, this.guess.getName(), this.width / 2, this.height / 2 - 7, 16777215);
-            drawCenteredText(matrices, this.textRenderer, this.guess.getDescription(), this.width / 2, this.height / 2 + 7, 16777215);
+            drawCenteredTextWithShadow(matrices, this.textRenderer, WIN, this.width / 2, this.height / 2 - 20, 16777215);
+            drawCenteredTextWithShadow(matrices, this.textRenderer, this.guess.getName(), this.width / 2, this.height / 2 - 7, 16777215);
+            drawCenteredTextWithShadow(matrices, this.textRenderer, this.guess.getDescription(), this.width / 2, this.height / 2 + 7, 16777215);
         } else {
-            drawCenteredText(matrices, this.textRenderer, LOSE, this.width / 2, this.height / 2 - 5, 16777215);
+            drawCenteredTextWithShadow(matrices, this.textRenderer, LOSE, this.width / 2, this.height / 2 - 5, 16777215);
         }
 
         super.render(matrices, mouseX, mouseY, delta);

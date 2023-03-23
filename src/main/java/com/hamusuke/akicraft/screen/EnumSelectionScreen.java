@@ -1,12 +1,12 @@
 package com.hamusuke.akicraft.screen;
 
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.screen.ScreenTexts;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -36,10 +36,10 @@ public class EnumSelectionScreen<T extends Enum<T>> extends Screen implements Re
         });
 
         this.addSelectableChild(this.list);
-        this.addDrawableChild(new ButtonWidget(this.width / 4, this.height - 20, this.width / 2, 20, ScreenTexts.DONE, p_93751_ -> {
+        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> {
             var e = this.list.getSelectedOrNull();
             this.consumer.accept(e == null ? null : e.enumeration);
-        }));
+        }).dimensions(this.width / 4, this.height - 20, this.width / 2, 20).build());
     }
 
     @Override
@@ -79,7 +79,7 @@ public class EnumSelectionScreen<T extends Enum<T>> extends Screen implements Re
 
             @Override
             public void render(MatrixStack p_93523_, int p_93524_, int p_93525_, int p_93526_, int p_93527_, int p_93528_, int p_93529_, int p_93530_, boolean p_93531_, float p_93532_) {
-                EnumSelectionScreen.drawCenteredText(p_93523_, EnumSelectionScreen.this.textRenderer, this.enumeration.name(), p_93526_ + p_93527_ / 2, p_93525_ + 5, 16777215);
+                EnumSelectionScreen.drawCenteredTextWithShadow(p_93523_, EnumSelectionScreen.this.textRenderer, this.enumeration.name(), p_93526_ + p_93527_ / 2, p_93525_ + 5, 16777215);
             }
         }
     }

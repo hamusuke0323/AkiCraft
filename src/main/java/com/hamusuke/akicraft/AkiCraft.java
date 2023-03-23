@@ -8,7 +8,7 @@ import com.hamusuke.akicraft.texture.TextureManager;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import com.hamusuke.akicraft.util.ImageDataDeliverer;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -41,7 +41,7 @@ public final class AkiCraft implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         KeyBindingHelper.registerKeyBinding(this.keyMapping);
-        OpenAkiClientCommand.register(ClientCommandManager.DISPATCHER);
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> OpenAkiClientCommand.register(dispatcher));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (this.keyMapping.wasPressed()) {
                 this.openScreen();

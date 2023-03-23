@@ -9,7 +9,7 @@ import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,9 +33,9 @@ public class GuessResultScreen extends UseTextureManagerScreen {
 
     @Override
     protected void init() {
-        this.addDrawableChild(new ButtonWidget(0, this.height - 20, this.width / 3, 20, YES, button -> this.showGameResult(true)));
-        this.addDrawableChild(new ButtonWidget(this.width / 3, this.height - 20, this.width / 3, 20, NO, button -> this.no()));
-        this.addDrawableChild(new ButtonWidget(this.width * 2 / 3, this.height - 20, this.width / 3, 20, BACK, button -> this.close()));
+        this.addDrawableChild(ButtonWidget.builder(YES, button -> this.showGameResult(true)).dimensions(0, this.height - 20, this.width / 3, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(NO, button -> this.no()).dimensions(this.width / 3, this.height - 20, this.width / 3, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(BACK, button -> this.close()).dimensions(this.width * 2 / 3, this.height - 20, this.width / 3, 20).build());
     }
 
     @Override
@@ -44,17 +44,17 @@ public class GuessResultScreen extends UseTextureManagerScreen {
 
         AkiEmotions.CONFIDENT.renderEmotion(this.textureManager, matrices, this.width, this.height, 0, this.height / 8);
 
-        drawCenteredText(matrices, this.textRenderer, I_THINK_OF, this.width / 2, (this.height - 20) / 10, 16777215);
+        drawCenteredTextWithShadow(matrices, this.textRenderer, I_THINK_OF, this.width / 2, (this.height - 20) / 10, 16777215);
 
         if (this.deliverer.readyToRender()) {
             var texture = this.textureManager.bindTexture(this.deliverer.deliver());
             RenderSystem.setShaderTexture(0, texture.getGlId());
-            var d = wrapImageSizeToMin(this.deliverer.getDim(), new Dimension(this.width / 2, this.height / 2));
+            var d = wrapImageSize(this.deliverer.getDim(), new Dimension(this.width / 2, this.height / 2));
             drawTexture(matrices, this.width / 2 - d.width / 2, (this.height - 20) / 2 - d.height / 2, 0, 0, d.width, d.height, d.width, d.height);
         }
 
-        drawCenteredText(matrices, this.textRenderer, this.guess.getName(), this.width / 2, this.height - 55, 16777215);
-        drawCenteredText(matrices, this.textRenderer, this.guess.getDescription(), this.width / 2, this.height - 45, 16777215);
+        drawCenteredTextWithShadow(matrices, this.textRenderer, this.guess.getName(), this.width / 2, this.height - 55, 16777215);
+        drawCenteredTextWithShadow(matrices, this.textRenderer, this.guess.getDescription(), this.width / 2, this.height - 45, 16777215);
 
         super.render(matrices, mouseX, mouseY, delta);
     }
@@ -78,6 +78,6 @@ public class GuessResultScreen extends UseTextureManagerScreen {
             } else {
                 this.showGameResult(false);
             }
-        }, LiteralText.EMPTY, CONTINUE));
+        }, Text.empty(), CONTINUE));
     }
 }
