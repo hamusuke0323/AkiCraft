@@ -6,14 +6,10 @@ import com.hamusuke.akicraft.util.AkiEmotions;
 import com.hamusuke.akicraft.util.ImageDataDeliverer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,16 +44,16 @@ public class GuessResultScreen extends UseTextureManagerScreen {
 
         if (AkiEmotions.CONFIDENT.isRenderable()) {
             RenderSystem.setShaderTexture(0, this.textureManager.bindTexture(AkiEmotions.CONFIDENT.getImg()).getGlId());
-            Dimension d0 = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(this.width * 2 / 3, this.height * 2 / 3));
+            var d0 = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(this.width * 2 / 3, this.height * 2 / 3));
             drawTexture(matrices, 0, this.height / 8, 0, 0, d0.width, d0.height, d0.width, d0.height);
         }
 
         drawCenteredText(matrices, this.textRenderer, I_THINK_OF, this.width / 2, (this.height - 20) / 10, 16777215);
 
         if (this.deliverer.readyToRender()) {
-            AbstractTexture texture = this.textureManager.bindTexture(this.deliverer.deliver());
+            var texture = this.textureManager.bindTexture(this.deliverer.deliver());
             RenderSystem.setShaderTexture(0, texture.getGlId());
-            Dimension d = wrapImageSizeToMin(this.deliverer.getDim(), new Dimension(this.width / 2, this.height / 2));
+            var d = wrapImageSizeToMin(this.deliverer.getDim(), new Dimension(this.width / 2, this.height / 2));
             drawTexture(matrices, this.width / 2 - d.width / 2, (this.height - 20) / 2 - d.height / 2, 0, 0, d.width, d.height, d.width, d.height);
         }
 

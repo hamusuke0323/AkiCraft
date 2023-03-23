@@ -37,7 +37,7 @@ public class EnumSelectionScreen<T extends Enum<T>> extends Screen implements Re
 
         this.addSelectableChild(this.list);
         this.addDrawableChild(new ButtonWidget(this.width / 4, this.height - 20, this.width / 2, 20, ScreenTexts.DONE, p_93751_ -> {
-            List.Entry e = this.list.getSelectedOrNull();
+            var e = this.list.getSelectedOrNull();
             this.consumer.accept(e == null ? null : e.enumeration);
         }));
     }

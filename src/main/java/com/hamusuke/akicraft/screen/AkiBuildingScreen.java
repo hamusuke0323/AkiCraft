@@ -8,14 +8,8 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import org.apache.commons.compress.utils.Lists;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
     @Nullable
@@ -54,7 +48,7 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
             });
 
             if (this.language != null && this.type != null) {
-                AkiScreen screen = new AkiScreen(this.language, this.type).setParent(this.parent);
+                var screen = new AkiScreen(this.language, this.type).setParent(this.parent);
                 AkiCraft.getInstance().setAkiScreen(screen);
                 this.client.setScreen(screen);
             }

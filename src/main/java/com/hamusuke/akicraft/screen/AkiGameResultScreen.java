@@ -4,13 +4,9 @@ import com.github.markozajc.akiwrapper.core.entities.Guess;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -42,7 +38,7 @@ public class AkiGameResultScreen extends UseTextureManagerScreen {
 
         if (this.emotion.isRenderable()) {
             RenderSystem.setShaderTexture(0, this.textureManager.bindTexture(this.emotion.getImg()).getGlId());
-            Dimension d0 = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(this.width * 2 / 3, this.height * 2 / 3));
+            var d0 = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(this.width * 2 / 3, this.height * 2 / 3));
             drawTexture(matrices, 0, this.height / 8, 0, 0, d0.width, d0.height, d0.width, d0.height);
         }
 

@@ -3,9 +3,7 @@ package com.hamusuke.akicraft.screen;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.texture.TextureManager;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 import java.awt.*;
 

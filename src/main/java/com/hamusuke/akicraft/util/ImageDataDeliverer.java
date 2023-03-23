@@ -8,7 +8,6 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -16,7 +15,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,22 +80,13 @@ public class ImageDataDeliverer {
         if (!this.started) {
             this.started = true;
             CompletableFuture.supplyAsync(() -> {
-                try (ImageInputStream imageInputStream = ImageIO.createImageInputStream(this.url.openStream())) {
-                    Iterator<ImageReader> it = ImageIO.getImageReaders(imageInputStream);
+                try (var imageInputStream = ImageIO.createImageInputStream(this.url.openStream())) {
+                    var it = ImageIO.getImageReaders(imageInputStream);
                     if (it.hasNext()) {
-                        ImageReader imageReader = it.next();
+                        var imageReader = it.next();
                         imageReader.setInput(imageInputStream);
-
-                        BufferedImage bufferedImage;
-                        if (this.type == Type.WEBP) {
-                            WebPReadParam readParam = new WebPReadParam();
-                            readParam.setBypassFiltering(true);
-                            bufferedImage = imageReader.read(0, readParam);
-                        } else {
-                            bufferedImage = imageReader.read(0);
-                        }
-
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                        var bufferedImage = this.type.imageFactory.apply(imageReader);
+                        var byteArrayOutputStream = new ByteArrayOutputStream();
                         ImageIO.write(bufferedImage, this.type == Type.NORMAL ? imageReader.getFormatName() : "PNG", byteArrayOutputStream);
                         byteArrayOutputStream.flush();
                         byte[] bytes = byteArrayOutputStream.toByteArray();
@@ -108,7 +97,7 @@ public class ImageDataDeliverer {
                     } else {
                         throw new IOException("Image not found.");
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     exceptionHandler.accept(e);
                     this.failed.setTrue();
                 }
@@ -123,12 +112,22 @@ public class ImageDataDeliverer {
         }
     }
 
-    public URL getUrl() {
-        return this.url;
+    public enum Type {
+        NORMAL(imageReader -> imageReader.read(0)),
+        WEBP(imageReader -> {
+            var param = new WebPReadParam();
+            param.setBypassFiltering(true);
+            return imageReader.read(0, param);
+        });
+
+        private final ThrowableFunction<ImageReader, BufferedImage> imageFactory;
+
+        Type(ThrowableFunction<ImageReader, BufferedImage> imageFactory) {
+            this.imageFactory = imageFactory;
+        }
     }
 
-    public enum Type {
-        NORMAL,
-        WEBP
+    private interface ThrowableFunction<T, R> {
+        R apply(T t) throws Exception;
     }
 }
