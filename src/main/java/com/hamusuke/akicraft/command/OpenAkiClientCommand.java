@@ -11,10 +11,7 @@ import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 public class OpenAkiClientCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("openaki").executes(context -> {
-            context.getSource().getClient().send(() -> {
-                AkiCraft.getInstance().openScreen();
-            });
-
+            context.getSource().getClient().send(() -> AkiCraft.getInstance().openScreen());
             return 1;
         }));
     }
