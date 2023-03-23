@@ -1,0 +1,20 @@
+{
+  "akicraft.playAkinator": "Play Akinator",
+  "akicraft.building.lang": "Choose Language",
+  "akicraft.building.guess": "Choose Guess Type",
+  "akicraft.play": "Play",
+  "akicraft.previous.question": "Correct",
+  "akicraft.probably": "Probably",
+  "akicraft.probably.not": "Probably Not",
+  "akicraft.yes": "Yes",
+  "akicraft.dont.know": "Don't Know",
+  "akicraft.no": "No",
+  "akicraft.result": "I think of",
+  "akicraft.replay": "Replay",
+  "akicraft.exit": "Exit Akinator",
+  "akicraft.continue": "Continue?",
+  "akicraft.loading": "Contacting server...",
+  "akicraft.qnum": "Question No.%s",
+  "akicraft.win": "Great, guessed right one more time!",
+  "akicraft.lose": "Bravo, you have defeated me !"
+}

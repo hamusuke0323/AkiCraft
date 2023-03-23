@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "akicraft",
+  "version": "${version}",
+  "name": "AkiCraft",
+  "description": "You can play Akinator!",
+  "authors": [
+    "hamusuke2303"
+  ],
+  "license": "GPLv3",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.hamusuke.akicraft.AkiCraft"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.13.3",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
