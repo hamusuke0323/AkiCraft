@@ -2,6 +2,7 @@ package com.hamusuke.akicraft.screen;
 
 import com.github.markozajc.akiwrapper.core.entities.Server;
 import com.hamusuke.akicraft.AkiCraft;
+import com.hamusuke.akicraft.util.SupportedGuessTypeFinder;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
@@ -9,6 +10,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.ScreenTexts;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
     @Nullable
@@ -28,13 +31,13 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
                 this.language = (Server.Language) e;
             }
             this.client.setScreen(this);
-        }, Server.Language.class, this.language))).dimensions(this.width / 4, this.height / 2 - 30, this.width / 2, 20).build());
+        }, Arrays.stream(Server.Language.values()).collect(Collectors.toUnmodifiableSet()), this.language))).dimensions(this.width / 4, this.height / 2 - 30, this.width / 2, 20).build());
         this.addDrawableChild(ButtonWidget.builder(GUESS, button -> this.client.setScreen(new EnumSelectionScreen<>(e -> {
             if (e != null) {
                 this.type = (Server.GuessType) e;
             }
             this.client.setScreen(this);
-        }, Server.GuessType.class, this.type))).dimensions(this.width / 4, this.height / 2 - 10, this.width / 2, 20).build());
+        }, SupportedGuessTypeFinder.SUPPORT_MAP.get(this.language), this.type))).dimensions(this.width / 4, this.height / 2 - 10, this.width / 2, 20).build()).active = this.language != null;
         this.addDrawableChild(ButtonWidget.builder(PLAY, button -> {
             if (this.language != null && this.type != null) {
                 var screen = new AkiScreen(this.language, this.type).setParent(this.parent);

@@ -9,19 +9,20 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.ScreenTexts;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class EnumSelectionScreen<T extends Enum<T>> extends Screen implements RelatedToAkiScreen {
     private final Consumer<Enum<T>> consumer;
-    private final Class<T> enumClass;
+    private final Set<T> enumList;
     private List list;
     @Nullable
     private final Enum<T> selected;
 
-    public EnumSelectionScreen(Consumer<Enum<T>> consumer, Class<T> enumClass, @Nullable Enum<T> selected) {
+    public EnumSelectionScreen(Consumer<Enum<T>> consumer, Set<T> enumList, @Nullable Enum<T> selected) {
         super(NarratorManager.EMPTY);
         this.consumer = consumer;
-        this.enumClass = enumClass;
+        this.enumList = enumList;
         this.selected = selected;
     }
 
@@ -51,7 +52,7 @@ public class EnumSelectionScreen<T extends Enum<T>> extends Screen implements Re
     final class List extends EntryListWidget<List.Entry> {
         public List() {
             super(EnumSelectionScreen.this.client, EnumSelectionScreen.this.width, EnumSelectionScreen.this.height, 20, EnumSelectionScreen.this.height - 20, 20);
-            for (Enum<T> e : EnumSelectionScreen.this.enumClass.getEnumConstants()) {
+            for (Enum<T> e : EnumSelectionScreen.this.enumList) {
                 this.addEntry(new Entry(e));
             }
         }

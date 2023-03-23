@@ -5,6 +5,7 @@ import com.github.markozajc.akiwrapper.AkiwrapperBuilder;
 import com.github.markozajc.akiwrapper.core.entities.Question;
 import com.github.markozajc.akiwrapper.core.entities.Server;
 import com.github.markozajc.akiwrapper.core.exceptions.ServerNotFoundException;
+import com.github.markozajc.akiwrapper.core.utils.UnirestUtils;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import net.minecraft.client.gui.screen.Screen;
@@ -182,6 +183,7 @@ public class AkiScreen extends UseTextureManagerScreen {
         }
 
         this.lock();
+        UnirestUtils.shutdownInstance();
         this.question = null;
         this.curProgress = 0.0D;
         this.curProbabilityToStopGuessing = 0.85D;
@@ -279,6 +281,7 @@ public class AkiScreen extends UseTextureManagerScreen {
 
     void exit() {
         AkiCraft.getInstance().setAkiScreen(null);
+        UnirestUtils.shutdownInstance();
         this.close();
     }
 }

@@ -1,5 +1,6 @@
 package com.hamusuke.akicraft;
 
+import com.github.markozajc.akiwrapper.core.utils.UnirestUtils;
 import com.hamusuke.akicraft.command.OpenAkiClientCommand;
 import com.hamusuke.akicraft.screen.AkiBuildingScreen;
 import com.hamusuke.akicraft.screen.AkiScreen;
@@ -7,6 +8,7 @@ import com.hamusuke.akicraft.screen.RelatedToAkiScreen;
 import com.hamusuke.akicraft.texture.TextureManager;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import com.hamusuke.akicraft.util.ImageDataDeliverer;
+import com.hamusuke.akicraft.util.SupportedGuessTypeFinder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -36,6 +38,7 @@ public final class AkiCraft implements ClientModInitializer {
     public AkiCraft() {
         INSTANCE = this;
         AkiEmotions.registerEmotions();
+        SupportedGuessTypeFinder.find();
     }
 
     @Override
@@ -51,6 +54,7 @@ public final class AkiCraft implements ClientModInitializer {
             ImageDataDeliverer.shutdown();
             AKI_THREAD.shutdown();
             this.textureManager.close();
+            UnirestUtils.shutdownInstance();
         });
     }
 

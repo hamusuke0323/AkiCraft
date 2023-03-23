@@ -3,11 +3,13 @@ package com.hamusuke.akicraft.util;
 import com.hamusuke.akicraft.texture.TextureManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.math.MatrixStack;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,18 +34,48 @@ public class AkiEmotions {
     }
 
     public static final class AkiEmotion {
+        private static final File CACHE_DIR = new File("akicache");
+        private final File cachedFile;
+        private final ImageDataDeliverer cachedImage;
         private final ImageDataDeliverer deliverer;
 
-        public AkiEmotion(String url) {
-            URL url1 = null;
+        public AkiEmotion(String s) {
             try {
-                url1 = new URL(url);
-            } catch (MalformedURLException ignored) {
+                var url = new URL(s);
+                var split = url.getPath().split("/");
+                this.cachedFile = new File(CACHE_DIR, split[split.length - 1]);
+                this.cachedImage = new ImageDataDeliverer(this.cachedFile.toURI().toURL());
+                this.deliverer = new ImageDataDeliverer(url, ImageDataDeliverer.Type.WEBP);
+                this.cacheAndLoadImage(() -> this.cachedImage.prepareAsync(e -> {
+                    LOGGER.warn("Error occurred while loading image", e);
+                }, imageDataDeliverer -> {
+                }));
+            } catch (MalformedURLException e) {
+                LOGGER.fatal("Error occurred while constructing URL instance! Minecraft will crash", e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void cacheAndLoadImage(Runnable loadImageFunc) {
+            if (this.cachedFile.exists()) {
+                loadImageFunc.run();
+                return;
             }
 
-            this.deliverer = new ImageDataDeliverer(url1, ImageDataDeliverer.Type.WEBP).prepareAsync(e -> {
+            if (!CACHE_DIR.exists() || !CACHE_DIR.isDirectory()) {
+                CACHE_DIR.mkdir();
+            }
+
+            this.deliverer.prepareAsync(e -> {
                 LOGGER.warn("Error occurred while retrieving image data", e);
-            }, imageDataDeliverer -> {
+            }, deliverer -> {
+                try {
+                    FileUtils.writeByteArrayToFile(this.cachedFile, deliverer.deliver().readAllBytes());
+                } catch (Exception e) {
+                    LOGGER.warn("Error occurred while saving file", e);
+                }
+
+                loadImageFunc.run();
             });
         }
 
@@ -56,12 +88,12 @@ public class AkiEmotions {
         }
 
         public boolean isRenderable() {
-            return this.deliverer.readyToRender();
+            return this.cachedImage.readyToRender();
         }
 
         @Nullable
         public InputStream getImg() {
-            return this.deliverer.deliver();
+            return this.cachedImage.deliver();
         }
     }
 }
