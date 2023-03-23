@@ -1,5 +1,8 @@
 package com.hamusuke.akicraft.util;
 
+import com.hamusuke.akicraft.texture.TextureManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.util.math.MatrixStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -8,6 +11,9 @@ import java.awt.*;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import static com.hamusuke.akicraft.screen.UseTextureManagerScreen.wrapImageSizeToMin;
+import static net.minecraft.client.gui.DrawableHelper.drawTexture;
 
 public class AkiEmotions {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -39,6 +45,14 @@ public class AkiEmotions {
                 LOGGER.warn("Error occurred while retrieving image data", e);
             }, imageDataDeliverer -> {
             });
+        }
+
+        public void renderEmotion(TextureManager textureManager, MatrixStack matrices, int width, int height, int x, int y) {
+            if (this.isRenderable()) {
+                RenderSystem.setShaderTexture(0, textureManager.bindTexture(this.getImg()).getGlId());
+                var d = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(width, (int) (height * 0.9D)));
+                drawTexture(matrices, x, (int) (y - height * 0.1D), 0, 0, d.width, d.height, d.width, d.height);
+            }
         }
 
         public boolean isRenderable() {

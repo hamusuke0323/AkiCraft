@@ -7,7 +7,6 @@ import com.github.markozajc.akiwrapper.core.entities.Server;
 import com.github.markozajc.akiwrapper.core.exceptions.ServerNotFoundException;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -20,7 +19,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,13 +28,14 @@ public class AkiScreen extends UseTextureManagerScreen {
     private Screen parent;
     private final Server.Language language;
     private final Server.GuessType guessType;
-    private Akiwrapper akinator;
+    private Akiwrapper akiwrapper;
     @Nullable
     private Question question;
     private AkiEmotions.AkiEmotion curEmotion = AkiEmotions.DEFI;
     private double curProgress;
     public double curProbabilityToStopGuessing = 0.85D;
     private final AtomicBoolean locked = new AtomicBoolean();
+    private ButtonWidget correctButton;
 
     public AkiScreen(Server.Language language, Server.GuessType guessType) {
         super(NarratorManager.EMPTY);
@@ -51,7 +50,7 @@ public class AkiScreen extends UseTextureManagerScreen {
 
     @Override
     protected void init() {
-        this.addDrawableChild(new ButtonWidget(0, this.height - 80, 20, 20, PREVIOUS_QUESTION, button -> this.undo(), (button, matrices, mouseX, mouseY) -> {
+        this.correctButton = this.addDrawableChild(new ButtonWidget(0, this.height - 80, 20, 20, PREVIOUS_QUESTION, button -> this.undo(), (button, matrices, mouseX, mouseY) -> {
             if (button.active) {
                 AkiScreen.this.renderOrderedTooltip(matrices, AkiScreen.this.client.textRenderer.wrapLines(PREVIOUS_QUESTION_TOOLTIP, Math.max(AkiScreen.this.width / 2 - 43, 170)), mouseX, mouseY);
             }
@@ -64,7 +63,17 @@ public class AkiScreen extends UseTextureManagerScreen {
         this.addDrawableChild(new ButtonWidget(0, this.height - 20, this.width / 2, 20, EXIT, p_93751_ -> this.exit()));
         this.addDrawableChild(new ButtonWidget(this.width / 2, this.height - 20, this.width / 2, 20, BACK, p_93751_ -> this.close()));
 
-        if (this.akinator == null) {
+        if (this.checkLocked()) {
+            this.lock();
+        }
+
+        this.toggleCorrectButton$active();
+
+        if (this.akiwrapper == null) {
+            if (this.checkLocked()) {
+                return;
+            }
+
             this.lock();
             CompletableFuture.supplyAsync(() -> {
                 try {
@@ -73,14 +82,14 @@ public class AkiScreen extends UseTextureManagerScreen {
                     throw new Error(e);
                 }
             }, AkiCraft.getAkiThread()).whenComplete((akiwrapper, throwable) -> {
-                this.akinator = akiwrapper;
-                this.question = this.akinator.getQuestion();
-                this.onQuestionChanged();
+                this.akiwrapper = akiwrapper;
+                this.question = this.akiwrapper.getQuestion();
                 this.curEmotion = AkiEmotions.DEFI;
                 this.unlock();
+                this.onQuestionChanged();
 
                 if (throwable != null) {
-                    LOGGER.warn("Error occurred while initializing akinator", throwable);
+                    LOGGER.warn("Error occurred while initializing akiwrapper", throwable);
                     this.exit();
                 }
             });
@@ -91,11 +100,7 @@ public class AkiScreen extends UseTextureManagerScreen {
     public void render(MatrixStack p_96562_, int p_96563_, int p_96564_, float p_96565_) {
         this.renderBackground(p_96562_);
 
-        if (this.curEmotion.isRenderable()) {
-            RenderSystem.setShaderTexture(0, this.textureManager.bindTexture(this.curEmotion.getImg()).getGlId());
-            var d = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(this.width * 2 / 3, this.height * 2 / 3));
-            drawTexture(p_96562_, 0, 0, 0, 0, d.width, d.height, d.width, d.height);
-        }
+        this.curEmotion.renderEmotion(this.textureManager, p_96562_, this.width, this.height, 0, 0);
 
         if (this.question != null) {
             drawCenteredText(p_96562_, this.textRenderer, new TranslatableText(AkiCraft.MOD_ID + ".qnum", this.question.getStep() + 1), this.width / 2, (this.height - 60) / 2 - 20, 16777215);
@@ -129,14 +134,14 @@ public class AkiScreen extends UseTextureManagerScreen {
         this.lock();
         this.question = null;
         CompletableFuture.supplyAsync(() -> {
-                    var q = this.akinator.answer(answer);
-                    this.akinator.getGuesses();
+                    var q = this.akiwrapper.answer(answer);
+                    this.akiwrapper.getGuesses();
                     return q;
                 }, AkiCraft.getAkiThread())
                 .whenComplete((question1, throwable) -> {
                     this.question = question1;
-                    this.onQuestionChanged();
                     this.unlock();
+                    this.onQuestionChanged();
 
                     if (throwable != null) {
                         this.reset();
@@ -161,11 +166,11 @@ public class AkiScreen extends UseTextureManagerScreen {
 
         this.lock();
         this.question = null;
-        CompletableFuture.supplyAsync(this.akinator::undoAnswer, AkiCraft.getAkiThread())
+        CompletableFuture.supplyAsync(this.akiwrapper::undoAnswer, AkiCraft.getAkiThread())
                 .whenComplete((question1, throwable) -> {
                     this.question = question1;
-                    this.onQuestionChanged();
                     this.unlock();
+                    this.onQuestionChanged();
 
                     if (throwable != null || this.question == null) {
                         this.reset();
@@ -191,14 +196,14 @@ public class AkiScreen extends UseTextureManagerScreen {
                 throw new Error(e);
             }
         }, AkiCraft.getAkiThread()).whenComplete((akiwrapper, throwable) -> {
-            this.akinator = akiwrapper;
-            this.question = this.akinator.getQuestion();
-            this.onQuestionChanged();
+            this.akiwrapper = akiwrapper;
+            this.question = this.akiwrapper.getQuestion();
             this.curEmotion = AkiEmotions.DEFI;
             this.unlock();
+            this.onQuestionChanged();
 
             if (throwable != null) {
-                LOGGER.warn("Failed to restart Akinator", throwable);
+                LOGGER.warn("Failed to restart Akiwrapper", throwable);
                 this.exit();
             }
         });
@@ -210,7 +215,7 @@ public class AkiScreen extends UseTextureManagerScreen {
         }
 
         this.lock();
-        CompletableFuture.supplyAsync(() -> this.akinator.getGuessesAboveProbability(this.curProbabilityToStopGuessing), AkiCraft.getAkiThread())
+        CompletableFuture.supplyAsync(() -> this.akiwrapper.getGuessesAboveProbability(this.curProbabilityToStopGuessing), AkiCraft.getAkiThread())
                 .whenComplete((guesses, throwable) -> {
                     if (guesses.size() > 0) {
                         GuessResultScreen guessResultScreen = new GuessResultScreen(this, guesses.get(0));
@@ -226,6 +231,7 @@ public class AkiScreen extends UseTextureManagerScreen {
 
     private void onQuestionChanged() {
         if (this.question != null) {
+            this.toggleCorrectButton$active();
             this.curProgress = this.question.getProgression();
             double gain = this.question.getInfogain();
             if (gain >= 0.6D) {
@@ -242,12 +248,18 @@ public class AkiScreen extends UseTextureManagerScreen {
         }
     }
 
+    private void toggleCorrectButton$active() {
+        if (this.question != null) {
+            this.correctButton.active = this.question.getStep() > 0;
+        }
+    }
+
     private synchronized void lock() {
         this.locked.set(true);
         this.children().stream()
                 .filter(element -> element instanceof ClickableWidget)
                 .map(element -> (ClickableWidget) element)
-                .filter(clickableWidget -> clickableWidget.getMessage() != BACK)
+                .filter(clickableWidget -> clickableWidget.getMessage() != EXIT && clickableWidget.getMessage() != BACK)
                 .forEach(clickableWidget -> clickableWidget.active = false);
     }
 

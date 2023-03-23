@@ -3,13 +3,11 @@ package com.hamusuke.akicraft.screen;
 import com.github.markozajc.akiwrapper.core.entities.Guess;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 
 public class AkiGameResultScreen extends UseTextureManagerScreen {
     private final AkiScreen parent;
@@ -36,11 +34,7 @@ public class AkiGameResultScreen extends UseTextureManagerScreen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground(matrices);
 
-        if (this.emotion.isRenderable()) {
-            RenderSystem.setShaderTexture(0, this.textureManager.bindTexture(this.emotion.getImg()).getGlId());
-            var d0 = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(this.width * 2 / 3, this.height * 2 / 3));
-            drawTexture(matrices, 0, this.height / 8, 0, 0, d0.width, d0.height, d0.width, d0.height);
-        }
+        this.emotion.renderEmotion(this.textureManager, matrices, this.width, this.height, 0, this.height / 8);
 
         if (this.guess != null) {
             drawCenteredText(matrices, this.textRenderer, WIN, this.width / 2, this.height / 2 - 20, 16777215);

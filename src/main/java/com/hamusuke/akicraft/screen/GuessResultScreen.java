@@ -42,11 +42,7 @@ public class GuessResultScreen extends UseTextureManagerScreen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground(matrices);
 
-        if (AkiEmotions.CONFIDENT.isRenderable()) {
-            RenderSystem.setShaderTexture(0, this.textureManager.bindTexture(AkiEmotions.CONFIDENT.getImg()).getGlId());
-            var d0 = wrapImageSizeToMin(AkiEmotions.SIZE, new Dimension(this.width * 2 / 3, this.height * 2 / 3));
-            drawTexture(matrices, 0, this.height / 8, 0, 0, d0.width, d0.height, d0.width, d0.height);
-        }
+        AkiEmotions.CONFIDENT.renderEmotion(this.textureManager, matrices, this.width, this.height, 0, this.height / 8);
 
         drawCenteredText(matrices, this.textRenderer, I_THINK_OF, this.width / 2, (this.height - 20) / 10, 16777215);
 
