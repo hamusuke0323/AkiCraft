@@ -22,8 +22,10 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation 'com.github.markozajc:akiwrapper:1.5.2'
-	modImplementation 'org.sejda.imageio:webp-imageio:0.1.6'
+	implementation 'com.github.markozajc:akiwrapper:1.5.2'
+	include 'com.github.markozajc:akiwrapper:1.5.2'
+	implementation 'org.sejda.imageio:webp-imageio:0.1.6'
+	include 'org.sejda.imageio:webp-imageio:0.1.6'
 }
 
 processResources {
