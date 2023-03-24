@@ -12,10 +12,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -30,6 +27,7 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
     private int waitTick;
     private long tickCount;
     private ButtonWidget research;
+    private ButtonWidget theme;
     private ButtonWidget play;
 
     public AkiBuildingScreen() {
@@ -52,6 +50,7 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
             this.research.active = false;
         }
 
+        this.theme.active = this.language != null;
         this.play.active = this.language != null && this.type != null;
     }
 
@@ -68,12 +67,13 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
         }, Arrays.stream(Server.Language.values()).collect(Collectors.toUnmodifiableSet()), this.language))).dimensions(this.width / 4, this.height / 2 - 40, this.width / 2, 20).build());
         this.research = this.addDrawableChild(ButtonWidget.builder(RESEARCH, button -> this.search()).dimensions(this.width / 4, this.height / 2 - 20, this.width / 2, 20).build());
         this.research.active = this.language != null && this.waitTick <= 0;
-        this.addDrawableChild(ButtonWidget.builder(GUESS, button -> this.client.setScreen(new EnumSelectionScreen<>(e -> {
+        this.theme = this.addDrawableChild(ButtonWidget.builder(GUESS, button -> this.client.setScreen(new EnumSelectionScreen<>(e -> {
             if (e != null) {
                 this.type = (Server.GuessType) e;
             }
             this.client.setScreen(this);
-        }, AVAILABLE_GUESS_TYPE_MAP.computeIfAbsent(this.language == null ? this.language = Server.Language.ENGLISH : this.language, lang -> Set.of()), this.type))).dimensions(this.width / 4, this.height / 2, this.width / 2, 20).build()).active = this.language != null;
+        }, AVAILABLE_GUESS_TYPE_MAP.computeIfAbsent(this.language == null ? this.language = Server.Language.ENGLISH : this.language, lang -> Set.of()), this.type))).dimensions(this.width / 4, this.height / 2, this.width / 2, 20).build());
+        this.theme.active = this.language != null;
         this.play = this.addDrawableChild(ButtonWidget.builder(PLAY, button -> {
             if (this.language != null && this.type != null) {
                 var screen = new AkiScreen(this.language, this.type).setParent(this.parent);
@@ -90,34 +90,45 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
     }
 
     private void search() {
-        if (this.waitTick > 0) {
-            return;
-        }
-
-        this.lock();
         this.type = null;
+        this.research.active = false;
         this.play.active = false;
+        this.theme.active = false;
+        var alreadyLockedWidgets = this.lock();
         this.waitTick = RESEARCH_INTERVAL;
         AvailableThemeSearcher.searchAvailableThemeAsync(this.language, (guessTypes, throwable) -> {
             AVAILABLE_GUESS_TYPE_MAP.put(this.language, guessTypes);
-            this.unlock();
+            this.unlock(alreadyLockedWidgets);
         });
     }
 
-    private synchronized void lock() {
+    private synchronized List<ClickableWidget> lock() {
         this.locked.set(true);
-        this.children().stream()
+        var widgets = this.children().stream()
                 .filter(element -> element instanceof ClickableWidget)
                 .map(element -> (ClickableWidget) element)
                 .filter(clickableWidget -> clickableWidget.getMessage() != BACK)
-                .forEach(clickableWidget -> clickableWidget.active = false);
+                .toList();
+        var result = widgets.stream().filter(clickableWidget -> !clickableWidget.active).toList();
+
+        widgets.forEach(clickableWidget -> clickableWidget.active = false);
+        return result;
     }
 
-    private synchronized void unlock() {
+    private synchronized void unlock(List<ClickableWidget> exclude) {
         this.locked.set(false);
         this.children().stream()
                 .filter(element -> element instanceof ClickableWidget)
                 .map(element -> (ClickableWidget) element)
+                .filter(clickableWidget -> {
+                    for (ClickableWidget widget : exclude) {
+                        if (widget.getMessage() == clickableWidget.getMessage()) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                })
                 .forEach(clickableWidget -> clickableWidget.active = true);
     }
 
