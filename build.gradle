@@ -47,9 +47,11 @@ java {
 }
 
 jar {
-	from("LICENSE", "LICENSE_webp_imageio") {
-		rename { "${it}_${project.archivesBaseName}"}
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}" }
 	}
+
+	from("LICENSE_webp_imageio")
 }
 
 // configure the maven publication
