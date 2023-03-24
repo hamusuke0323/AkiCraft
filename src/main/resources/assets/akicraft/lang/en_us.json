@@ -1,8 +1,8 @@
 {
   "akicraft.playAkinator": "Play Akinator",
   "akicraft.building.lang": "Choose Language",
-  "akicraft.building.searching": "Searching available theme in %s%s",
-  "akicraft.building.research": "Research Available Theme",
+  "akicraft.building.searching": "Searching available themes%s",
+  "akicraft.building.research": "Research Available Themes",
   "akicraft.building.guess": "Choose Theme",
   "akicraft.play": "Play",
   "akicraft.previous.question": "Correct",

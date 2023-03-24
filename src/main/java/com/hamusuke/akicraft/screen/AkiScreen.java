@@ -121,7 +121,7 @@ public class AkiScreen extends UseTextureManagerScreen {
         this.renderProgressBar(matrices);
 
         if (this.display.errorDisplayable()) {
-            this.renderTooltip(matrices, Text.translatable(AkiCraft.MOD_ID + ".error", this.display.getError()), mouseX, mouseY);
+            this.renderOrderedTooltip(matrices, this.textRenderer.wrapLines(Text.translatable(AkiCraft.MOD_ID + ".error", this.display.getError()), this.width / 2), mouseX, mouseY);
         }
 
         super.render(matrices, mouseX, mouseY, delta);

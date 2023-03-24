@@ -10,6 +10,8 @@ import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -17,9 +19,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Map<Server.Language, Set<Server.GuessType>> AVAILABLE_GUESS_TYPE_MAP = new HashMap<>();
     private static final int RESEARCH_INTERVAL = 300;
     private final AtomicBoolean locked = new AtomicBoolean();
+    private final ErrorDisplay display = new ErrorDisplay(200);
     private Server.Language language;
     private Server.GuessType type;
     @Nullable
@@ -37,6 +41,8 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
     @Override
     public void tick() {
         super.tick();
+
+        this.display.tick();
 
         this.tickCount += 150L;
 
@@ -99,6 +105,11 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
         AvailableThemeSearcher.searchAvailableThemeAsync(this.language, (guessTypes, throwable) -> {
             AVAILABLE_GUESS_TYPE_MAP.put(this.language, guessTypes);
             this.unlock(alreadyLockedWidgets);
+
+            if (throwable != null) {
+                LOGGER.warn("Error occurred while searching theme", throwable);
+                this.display.sendError(throwable.getMessage());
+            }
         });
     }
 
@@ -143,6 +154,10 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
         } else {
             this.renderBackground(matrices);
             super.render(matrices, mouseX, mouseY, delta);
+        }
+
+        if (this.display.errorDisplayable()) {
+            this.renderOrderedTooltip(matrices, this.textRenderer.wrapLines(Text.translatable(AkiCraft.MOD_ID + ".error", this.display.getError()), this.width / 2), mouseX, mouseY);
         }
     }
 
