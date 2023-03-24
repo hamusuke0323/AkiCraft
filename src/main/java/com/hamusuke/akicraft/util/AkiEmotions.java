@@ -66,6 +66,7 @@ public class AkiEmotions {
                 CACHE_DIR.mkdir();
             }
 
+            LOGGER.info("Creating image cache: {}", this.cachedFile.getName());
             this.deliverer.prepareAsync(e -> {
                 LOGGER.warn("Error occurred while retrieving image data", e);
             }, deliverer -> {
