@@ -8,7 +8,6 @@ import com.hamusuke.akicraft.screen.RelatedToAkiScreen;
 import com.hamusuke.akicraft.texture.TextureManager;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import com.hamusuke.akicraft.util.ImageDataDeliverer;
-import com.hamusuke.akicraft.util.SupportedGuessTypeFinder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -28,6 +27,7 @@ public final class AkiCraft implements ClientModInitializer {
     private static final MinecraftClient mc = MinecraftClient.getInstance();
     private static AkiCraft INSTANCE;
     private static final ExecutorService AKI_THREAD = Executors.newCachedThreadPool(r -> new Thread(r, "Aki Thread"));
+    private final AkiBuildingScreen buildingScreen = new AkiBuildingScreen();
     @Nullable
     private AkiScreen akiScreen;
     @Nullable
@@ -37,12 +37,11 @@ public final class AkiCraft implements ClientModInitializer {
 
     public AkiCraft() {
         INSTANCE = this;
-        AkiEmotions.registerEmotions();
-        SupportedGuessTypeFinder.find();
     }
 
     @Override
     public void onInitializeClient() {
+        AkiEmotions.registerEmotions();
         KeyBindingHelper.registerKeyBinding(this.keyMapping);
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> OpenAkiClientCommand.register(dispatcher));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -65,10 +64,10 @@ public final class AkiCraft implements ClientModInitializer {
 
         if (this.resultScreen != null) {
             mc.setScreen(this.resultScreen);
-        } else if (this.akiScreen == null) {
-            mc.setScreen(new AkiBuildingScreen(mc.currentScreen));
-        } else {
+        } else if (this.akiScreen != null) {
             mc.setScreen(this.akiScreen.setParent(mc.currentScreen));
+        } else {
+            mc.setScreen(this.buildingScreen.setParent(mc.currentScreen));
         }
     }
 

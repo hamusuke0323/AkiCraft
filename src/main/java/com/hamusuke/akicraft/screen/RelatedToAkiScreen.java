@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 public interface RelatedToAkiScreen {
     Text LANG = Text.translatable(AkiCraft.MOD_ID + ".building.lang");
     Text GUESS = Text.translatable(AkiCraft.MOD_ID + ".building.guess");
+    Text RESEARCH = Text.translatable(AkiCraft.MOD_ID + ".building.research");
     Text PLAY = Text.translatable(AkiCraft.MOD_ID + ".play");
     Text PREVIOUS_QUESTION = Text.of("←");
     Text PREVIOUS_QUESTION_TOOLTIP = Text.translatable(AkiCraft.MOD_ID + ".previous.question");
@@ -15,7 +16,6 @@ public interface RelatedToAkiScreen {
     Text DONT_KNOW = Text.translatable(AkiCraft.MOD_ID + ".dont.know");
     Text NO = Text.translatable(AkiCraft.MOD_ID + ".no");
     Text EXIT = Text.translatable(AkiCraft.MOD_ID + ".exit");
-    Text LOADING = Text.translatable(AkiCraft.MOD_ID + ".loading");
     Text I_THINK_OF = Text.translatable(AkiCraft.MOD_ID + ".result");
     Text CONTINUE = Text.translatable(AkiCraft.MOD_ID + ".continue");
     Text REPLAY = Text.translatable(AkiCraft.MOD_ID + ".replay");

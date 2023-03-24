@@ -8,6 +8,7 @@ import com.github.markozajc.akiwrapper.core.exceptions.ServerNotFoundException;
 import com.github.markozajc.akiwrapper.core.utils.UnirestUtils;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
+import net.minecraft.client.gui.screen.LoadingDisplay;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -37,12 +38,21 @@ public class AkiScreen extends UseTextureManagerScreen {
     private double curProgress;
     public double curProbabilityToStopGuessing = 0.85D;
     private final AtomicBoolean locked = new AtomicBoolean();
+    private final ErrorDisplay display = new ErrorDisplay(200);
     private ButtonWidget correctButton;
+    private long tickCount;
 
     public AkiScreen(Server.Language language, Server.GuessType guessType) {
         super(NarratorManager.EMPTY);
         this.language = language;
         this.guessType = guessType;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        this.tickCount += 150L;
+        this.display.tick();
     }
 
     public AkiScreen setParent(@Nullable Screen parent) {
@@ -88,6 +98,7 @@ public class AkiScreen extends UseTextureManagerScreen {
 
                 if (throwable != null) {
                     LOGGER.warn("Error occurred while initializing akiwrapper", throwable);
+                    this.display.sendError(throwable.getMessage());
                     this.exit();
                 }
             });
@@ -95,20 +106,25 @@ public class AkiScreen extends UseTextureManagerScreen {
     }
 
     @Override
-    public void render(MatrixStack p_96562_, int p_96563_, int p_96564_, float p_96565_) {
-        this.renderBackground(p_96562_);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        this.renderBackground(matrices);
 
-        this.curEmotion.renderEmotion(this.textureManager, p_96562_, this.width, this.height, 0, 0);
+        this.curEmotion.renderEmotion(this.textureManager, matrices, this.width, this.height, 0, 0);
 
         if (this.question != null) {
-            drawCenteredTextWithShadow(p_96562_, this.textRenderer, Text.translatable(AkiCraft.MOD_ID + ".qnum", this.question.getStep() + 1), this.width / 2, (this.height - 60) / 2 - 20, 16777215);
-            drawCenteredTextWithShadow(p_96562_, this.textRenderer, this.question.getQuestion(), this.width / 2, (this.height - 60) / 2, 16777215);
+            drawCenteredTextWithShadow(matrices, this.textRenderer, Text.translatable(AkiCraft.MOD_ID + ".qnum", this.question.getStep() + 1), this.width / 2, (this.height - 60) / 2 - 20, 16777215);
+            drawCenteredTextWithShadow(matrices, this.textRenderer, this.question.getQuestion(), this.width / 2, (this.height - 60) / 2, 16777215);
         } else {
-            drawCenteredTextWithShadow(p_96562_, this.textRenderer, LOADING, this.width / 2, (this.height - 60) / 2, 16777215);
+            drawCenteredTextWithShadow(matrices, this.textRenderer, Text.translatable(AkiCraft.MOD_ID + ".loading", LoadingDisplay.get(this.tickCount)), this.width / 2, (this.height - 60) / 2, 16777215);
         }
 
-        this.renderProgressBar(p_96562_);
-        super.render(p_96562_, p_96563_, p_96564_, p_96565_);
+        this.renderProgressBar(matrices);
+
+        if (this.display.errorDisplayable()) {
+            this.renderTooltip(matrices, Text.translatable(AkiCraft.MOD_ID + ".error", this.display.getError()), mouseX, mouseY);
+        }
+
+        super.render(matrices, mouseX, mouseY, delta);
     }
 
     private void renderProgressBar(MatrixStack p_96562_) {
@@ -143,6 +159,7 @@ public class AkiScreen extends UseTextureManagerScreen {
 
                     if (throwable != null) {
                         this.reset();
+                        this.display.sendError(throwable.getMessage());
                         LOGGER.warn("Error occurred while answering question", throwable);
                     } else if (this.question == null) {
                         var screen = new AkiGameResultScreen(this, null);
@@ -170,9 +187,10 @@ public class AkiScreen extends UseTextureManagerScreen {
                     this.unlock();
                     this.onQuestionChanged();
 
-                    if (throwable != null || this.question == null) {
+                    if (throwable != null) {
                         this.reset();
                         LOGGER.warn("Error occurred while undoing the answer", throwable);
+                        this.display.sendError(throwable.getMessage());
                     }
                 });
     }
