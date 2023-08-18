@@ -1,6 +1,5 @@
 package com.hamusuke.akicraft.screen;
 
-import com.github.markozajc.akiwrapper.core.entities.Guess;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import com.hamusuke.akicraft.util.ImageDataDeliverer;
@@ -12,8 +11,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eu.zajc.akiwrapper.core.entities.Guess;
 
 import java.awt.*;
+import java.util.concurrent.CompletableFuture;
 
 public class GuessResultScreen extends UseTextureManagerScreen {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -75,9 +76,22 @@ public class GuessResultScreen extends UseTextureManagerScreen {
                 }
 
                 this.client.setScreen(this.parent);
+                this.rejectGuess();
             } else {
                 this.showGameResult(false);
             }
         }, Text.empty(), CONTINUE));
+    }
+
+    private void rejectGuess() {
+        CompletableFuture.supplyAsync(this.parent.getAkiwrapper()::rejectLastGuess, AkiCraft.getAkiThread())
+                .whenComplete((question1, throwable) -> {
+                    if (question1 == null) {
+                        this.showGameResult(false);
+                        return;
+                    }
+
+                    this.parent.onLastQRejected(question1, throwable);
+                });
     }
 }

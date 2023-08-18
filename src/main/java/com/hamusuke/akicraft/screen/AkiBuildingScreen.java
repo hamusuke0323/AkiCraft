@@ -1,17 +1,19 @@
 package com.hamusuke.akicraft.screen;
 
-import com.github.markozajc.akiwrapper.core.entities.Server;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AvailableThemeSearcher;
 import net.minecraft.client.gui.screen.LoadingDisplay;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eu.zajc.akiwrapper.core.entities.Server;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -26,6 +28,7 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
     private final ErrorDisplay display = new ErrorDisplay(200);
     private Server.Language language;
     private Server.GuessType type;
+    private boolean profanityFilterEnabled;
     @Nullable
     private Screen parent;
     private int waitTick;
@@ -70,23 +73,26 @@ public class AkiBuildingScreen extends Screen implements RelatedToAkiScreen {
                 }
             }
             this.client.setScreen(this);
-        }, Arrays.stream(Server.Language.values()).collect(Collectors.toUnmodifiableSet()), this.language))).dimensions(this.width / 4, this.height / 2 - 40, this.width / 2, 20).build());
-        this.research = this.addDrawableChild(ButtonWidget.builder(RESEARCH, button -> this.search()).dimensions(this.width / 4, this.height / 2 - 20, this.width / 2, 20).build());
+        }, Arrays.stream(Server.Language.values()).collect(Collectors.toUnmodifiableSet()), this.language))).dimensions(this.width / 4, this.height / 2 - 50, this.width / 2, 20).build());
+        this.research = this.addDrawableChild(ButtonWidget.builder(RESEARCH, button -> this.search()).dimensions(this.width / 4, this.height / 2 - 30, this.width / 2, 20).build());
         this.research.active = this.language != null && this.waitTick <= 0;
         this.theme = this.addDrawableChild(ButtonWidget.builder(GUESS, button -> this.client.setScreen(new EnumSelectionScreen<>(e -> {
             if (e != null) {
                 this.type = (Server.GuessType) e;
             }
             this.client.setScreen(this);
-        }, AVAILABLE_GUESS_TYPE_MAP.computeIfAbsent(this.language == null ? this.language = Server.Language.ENGLISH : this.language, lang -> Set.of()), this.type))).dimensions(this.width / 4, this.height / 2, this.width / 2, 20).build());
+        }, AVAILABLE_GUESS_TYPE_MAP.computeIfAbsent(this.language == null ? this.language = Server.Language.ENGLISH : this.language, lang -> Set.of()), this.type))).dimensions(this.width / 4, this.height / 2 - 10, this.width / 2, 20).build());
         this.theme.active = this.language != null;
+        this.addDrawableChild(CyclingButtonWidget.onOffBuilder(ScreenTexts.YES, ScreenTexts.NO).initially(this.profanityFilterEnabled).build(this.width / 4, this.height / 2 + 10, this.width / 2, 20, PROFANITY_FILTER, (button, value) -> {
+            this.profanityFilterEnabled = value;
+        }));
         this.play = this.addDrawableChild(ButtonWidget.builder(PLAY, button -> {
             if (this.language != null && this.type != null) {
-                var screen = new AkiScreen(this.language, this.type).setParent(this.parent);
+                var screen = new AkiScreen(this.language, this.type, this.profanityFilterEnabled).setParent(this.parent);
                 AkiCraft.getInstance().setAkiScreen(screen);
                 this.client.setScreen(screen);
             }
-        }).dimensions(this.width / 4, this.height / 2 + 20, this.width / 2, 20).build());
+        }).dimensions(this.width / 4, this.height / 2 + 30, this.width / 2, 20).build());
         this.play.active = this.language != null && this.type != null;
         this.addDrawableChild(ButtonWidget.builder(BACK, p_93751_ -> this.close()).dimensions(this.width / 4, this.height - 20, this.width / 2, 20).build());
 

@@ -1,11 +1,5 @@
 package com.hamusuke.akicraft.screen;
 
-import com.github.markozajc.akiwrapper.Akiwrapper;
-import com.github.markozajc.akiwrapper.AkiwrapperBuilder;
-import com.github.markozajc.akiwrapper.core.entities.Question;
-import com.github.markozajc.akiwrapper.core.entities.Server;
-import com.github.markozajc.akiwrapper.core.exceptions.ServerNotFoundException;
-import com.github.markozajc.akiwrapper.core.utils.UnirestUtils;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import net.minecraft.client.gui.screen.LoadingDisplay;
@@ -20,6 +14,12 @@ import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eu.zajc.akiwrapper.Akiwrapper;
+import org.eu.zajc.akiwrapper.AkiwrapperBuilder;
+import org.eu.zajc.akiwrapper.core.entities.Question;
+import org.eu.zajc.akiwrapper.core.entities.Server;
+import org.eu.zajc.akiwrapper.core.exceptions.ServerNotFoundException;
+import org.eu.zajc.akiwrapper.core.utils.UnirestUtils;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
@@ -31,6 +31,7 @@ public class AkiScreen extends UseTextureManagerScreen {
     private Screen parent;
     private final Server.Language language;
     private final Server.GuessType guessType;
+    private final boolean profanityFilterEnabled;
     private Akiwrapper akiwrapper;
     @Nullable
     private Question question;
@@ -42,10 +43,11 @@ public class AkiScreen extends UseTextureManagerScreen {
     private ButtonWidget correctButton;
     private long tickCount;
 
-    public AkiScreen(Server.Language language, Server.GuessType guessType) {
+    public AkiScreen(Server.Language language, Server.GuessType guessType, boolean profanityFilterEnabled) {
         super(NarratorManager.EMPTY);
         this.language = language;
         this.guessType = guessType;
+        this.profanityFilterEnabled = profanityFilterEnabled;
     }
 
     @Override
@@ -85,7 +87,7 @@ public class AkiScreen extends UseTextureManagerScreen {
             this.lock();
             CompletableFuture.supplyAsync(() -> {
                 try {
-                    return new AkiwrapperBuilder().setLanguage(this.language).setGuessType(this.guessType).build();
+                    return new AkiwrapperBuilder().setLanguage(this.language).setGuessType(this.guessType).setFilterProfanity(this.profanityFilterEnabled).build();
                 } catch (ServerNotFoundException e) {
                     throw new Error(e);
                 }
@@ -232,18 +234,31 @@ public class AkiScreen extends UseTextureManagerScreen {
         }
 
         this.lock();
-        CompletableFuture.supplyAsync(() -> this.akiwrapper.getGuessesAboveProbability(this.curProbabilityToStopGuessing), AkiCraft.getAkiThread())
-                .whenComplete((guesses, throwable) -> {
-                    if (guesses.size() > 0) {
-                        GuessResultScreen guessResultScreen = new GuessResultScreen(this, guesses.get(0));
+        CompletableFuture.supplyAsync(() -> this.akiwrapper.suggestGuess(), AkiCraft.getAkiThread())
+                .whenComplete((guess, throwable) -> {
+                    if (guess != null) {
+                        var guessResultScreen = new GuessResultScreen(this, guess);
                         AkiCraft.getInstance().setResultScreen(guessResultScreen);
                         if (this.client.currentScreen instanceof AkiScreen) {
                             this.client.send(() -> this.client.setScreen(guessResultScreen));
                         }
+                    } else {
+                        this.unlock();
                     }
-
-                    this.unlock();
                 });
+    }
+
+    void onLastQRejected(Question question, Throwable throwable) {
+        if (throwable != null) {
+            this.reset();
+            LOGGER.warn("Error occurred while rejecting last question", throwable);
+            this.display.sendError(throwable.getMessage());
+            return;
+        }
+
+        this.question = question;
+        this.unlock();
+        this.onQuestionChanged();
     }
 
     private void onQuestionChanged() {
@@ -280,7 +295,7 @@ public class AkiScreen extends UseTextureManagerScreen {
                 .forEach(clickableWidget -> clickableWidget.active = false);
     }
 
-    private synchronized void unlock() {
+    synchronized void unlock() {
         this.locked.set(false);
         this.children().stream()
                 .filter(element -> element instanceof ClickableWidget)
@@ -301,5 +316,9 @@ public class AkiScreen extends UseTextureManagerScreen {
         AkiCraft.getInstance().setAkiScreen(null);
         UnirestUtils.shutdownInstance();
         this.close();
+    }
+
+    public Akiwrapper getAkiwrapper() {
+        return this.akiwrapper;
     }
 }

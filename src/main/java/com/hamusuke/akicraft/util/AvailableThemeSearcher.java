@@ -1,11 +1,11 @@
 package com.hamusuke.akicraft.util;
 
-import com.github.markozajc.akiwrapper.core.entities.Server;
-import com.github.markozajc.akiwrapper.core.utils.Servers;
-import com.github.markozajc.akiwrapper.core.utils.UnirestUtils;
 import com.hamusuke.akicraft.AkiCraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eu.zajc.akiwrapper.core.entities.Server;
+import org.eu.zajc.akiwrapper.core.utils.Servers;
+import org.eu.zajc.akiwrapper.core.utils.UnirestUtils;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;

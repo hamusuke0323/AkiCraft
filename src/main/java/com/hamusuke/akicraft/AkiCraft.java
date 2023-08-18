@@ -1,6 +1,5 @@
 package com.hamusuke.akicraft;
 
-import com.github.markozajc.akiwrapper.core.utils.UnirestUtils;
 import com.hamusuke.akicraft.command.OpenAkiClientCommand;
 import com.hamusuke.akicraft.screen.AkiBuildingScreen;
 import com.hamusuke.akicraft.screen.AkiScreen;
@@ -16,6 +15,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.KeyBinding;
+import org.eu.zajc.akiwrapper.core.utils.UnirestUtils;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;

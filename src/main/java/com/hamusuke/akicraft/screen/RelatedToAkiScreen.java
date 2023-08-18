@@ -7,6 +7,7 @@ public interface RelatedToAkiScreen {
     Text LANG = Text.translatable(AkiCraft.MOD_ID + ".building.lang");
     Text GUESS = Text.translatable(AkiCraft.MOD_ID + ".building.guess");
     Text RESEARCH = Text.translatable(AkiCraft.MOD_ID + ".building.research");
+    Text PROFANITY_FILTER = Text.translatable(AkiCraft.MOD_ID + ".building.profanity.filter");
     Text PLAY = Text.translatable(AkiCraft.MOD_ID + ".play");
     Text PREVIOUS_QUESTION = Text.of("←");
     Text PREVIOUS_QUESTION_TOOLTIP = Text.translatable(AkiCraft.MOD_ID + ".previous.question");

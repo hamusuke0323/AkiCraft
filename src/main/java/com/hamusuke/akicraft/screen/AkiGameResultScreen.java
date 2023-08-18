@@ -1,11 +1,11 @@
 package com.hamusuke.akicraft.screen;
 
-import com.github.markozajc.akiwrapper.core.entities.Guess;
 import com.hamusuke.akicraft.AkiCraft;
 import com.hamusuke.akicraft.util.AkiEmotions;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
+import org.eu.zajc.akiwrapper.core.entities.Guess;
 
 import javax.annotation.Nullable;
 
@@ -50,6 +50,7 @@ public class AkiGameResultScreen extends UseTextureManagerScreen {
     private void restart() {
         AkiCraft.getInstance().setResultScreen(null);
         this.client.setScreen(this.parent);
+        this.parent.unlock();
         this.parent.reset();
     }
 
