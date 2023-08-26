@@ -26,6 +26,10 @@ public class ErrorDisplay {
         this.tickCount = this.displayTick;
     }
 
+    public void sendError(Throwable error) {
+        this.sendError(error.getLocalizedMessage());
+    }
+
     public void clearError() {
         this.error = null;
     }

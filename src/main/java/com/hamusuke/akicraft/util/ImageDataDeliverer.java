@@ -112,6 +112,10 @@ public class ImageDataDeliverer {
         }
     }
 
+    public URL getURL() {
+        return this.url;
+    }
+
     public enum Type {
         NORMAL(imageReader -> imageReader.read(0)),
         WEBP(imageReader -> {

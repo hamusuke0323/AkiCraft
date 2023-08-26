@@ -18,6 +18,8 @@ public interface RelatedToAkiScreen {
     Text NO = Text.translatable(AkiCraft.MOD_ID + ".no");
     Text EXIT = Text.translatable(AkiCraft.MOD_ID + ".exit");
     Text I_THINK_OF = Text.translatable(AkiCraft.MOD_ID + ".result");
+    Text DOWNLOAD_IMAGE = Text.translatable(AkiCraft.MOD_ID + ".dl");
+    Text DOWNLOAD_IMAGE_MSG = Text.translatable(AkiCraft.MOD_ID + ".dl.msg");
     Text CONTINUE = Text.translatable(AkiCraft.MOD_ID + ".continue");
     Text REPLAY = Text.translatable(AkiCraft.MOD_ID + ".replay");
     Text WIN = Text.translatable(AkiCraft.MOD_ID + ".win");
