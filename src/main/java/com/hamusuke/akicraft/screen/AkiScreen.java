@@ -39,7 +39,7 @@ public class AkiScreen extends UseTextureManagerScreen {
     private double curProgress;
     public double curProbabilityToStopGuessing = 0.85D;
     private final AtomicBoolean locked = new AtomicBoolean();
-    private final ErrorDisplay display = new ErrorDisplay(200);
+    private final MessageDisplay display = new MessageDisplay(200);
     private ButtonWidget correctButton;
     private long tickCount;
 
@@ -100,7 +100,7 @@ public class AkiScreen extends UseTextureManagerScreen {
 
                 if (throwable != null) {
                     LOGGER.warn("Error occurred while initializing akiwrapper", throwable);
-                    this.display.sendError(throwable.getMessage());
+                    this.display.sendMessage(throwable.getMessage());
                     this.exit();
                 }
             });
@@ -122,8 +122,8 @@ public class AkiScreen extends UseTextureManagerScreen {
 
         this.renderProgressBar(matrices);
 
-        if (this.display.errorDisplayable()) {
-            this.renderOrderedTooltip(matrices, this.textRenderer.wrapLines(Text.translatable(AkiCraft.MOD_ID + ".error", this.display.getError()), this.width / 2), mouseX, mouseY);
+        if (this.display.messageDisplayable()) {
+            this.renderOrderedTooltip(matrices, this.textRenderer.wrapLines(Text.translatable(AkiCraft.MOD_ID + ".error", this.display.getMessage()), this.width / 2), mouseX, mouseY);
         }
 
         super.render(matrices, mouseX, mouseY, delta);
@@ -161,7 +161,7 @@ public class AkiScreen extends UseTextureManagerScreen {
 
                     if (throwable != null) {
                         this.reset();
-                        this.display.sendError(throwable.getMessage());
+                        this.display.sendMessage(throwable.getMessage());
                         LOGGER.warn("Error occurred while answering question", throwable);
                     } else if (this.question == null) {
                         var screen = new AkiGameResultScreen(this, null);
@@ -192,7 +192,7 @@ public class AkiScreen extends UseTextureManagerScreen {
                     if (throwable != null) {
                         this.reset();
                         LOGGER.warn("Error occurred while undoing the answer", throwable);
-                        this.display.sendError(throwable.getMessage());
+                        this.display.sendMessage(throwable.getMessage());
                     }
                 });
     }
@@ -252,7 +252,7 @@ public class AkiScreen extends UseTextureManagerScreen {
         if (throwable != null) {
             this.reset();
             LOGGER.warn("Error occurred while rejecting last question", throwable);
-            this.display.sendError(throwable.getMessage());
+            this.display.sendMessage(throwable.getMessage());
             return;
         }
 

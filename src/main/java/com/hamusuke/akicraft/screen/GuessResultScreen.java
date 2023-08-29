@@ -9,8 +9,8 @@ import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
-import net.minecraft.util.Language;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eu.zajc.akiwrapper.core.entities.Guess;
@@ -30,7 +30,8 @@ public class GuessResultScreen extends UseTextureManagerScreen {
     private final ImageDataDeliverer deliverer;
     private final File out;
     private final AtomicBoolean dlStarted = new AtomicBoolean();
-    private final ErrorDisplay display = new ErrorDisplay(200);
+    private final MessageDisplay display = new MessageDisplay(200);
+    private final MessageDisplay dlFinish = new MessageDisplay(200);
     private int x, y, w, h;
     @Nullable
     private FileDownload fileDownload;
@@ -67,6 +68,7 @@ public class GuessResultScreen extends UseTextureManagerScreen {
     public void tick() {
         super.tick();
         this.display.tick();
+        this.dlFinish.tick();
     }
 
     @Override
@@ -89,7 +91,7 @@ public class GuessResultScreen extends UseTextureManagerScreen {
 
             this.renderProgress(matrices);
 
-            if (this.isOnImage(mouseX, mouseY) && !this.dlStarted.get() && !this.display.errorDisplayable()) {
+            if (this.isOnImage(mouseX, mouseY) && !this.dlStarted.get() && !this.display.messageDisplayable()) {
                 this.renderTooltip(matrices, DOWNLOAD_IMAGE, mouseX, mouseY);
             }
         }
@@ -97,8 +99,13 @@ public class GuessResultScreen extends UseTextureManagerScreen {
         drawCenteredTextWithShadow(matrices, this.textRenderer, this.guess.getName(), this.width / 2, this.height - 55, 16777215);
         drawCenteredTextWithShadow(matrices, this.textRenderer, this.guess.getDescription(), this.width / 2, this.height - 45, 16777215);
 
-        if (this.display.errorDisplayable()) {
-            this.renderOrderedTooltip(matrices, this.textRenderer.wrapLines(Text.literal(this.display.getError()), this.width / 2), mouseX, mouseY);
+        if (this.display.messageDisplayable()) {
+            this.renderOrderedTooltip(matrices, this.textRenderer.wrapLines(this.display.getMessage(), this.width / 2), mouseX, mouseY);
+        }
+
+        if (this.dlFinish.messageDisplayable()) {
+            var text = this.dlFinish.getMessage();
+            this.renderOrderedTooltip(matrices, this.textRenderer.wrapLines(text, this.width / 2), (this.width - this.textRenderer.getWidth(text)) / 2, this.y + this.h + 20);
         }
 
         super.render(matrices, mouseX, mouseY, delta);
@@ -108,11 +115,21 @@ public class GuessResultScreen extends UseTextureManagerScreen {
         return this.w > 0 && this.h > 0 && this.deliverer.readyToRender() && this.x <= mouseX && this.x + this.w >= mouseX && this.y <= mouseY && this.y + this.h >= mouseY;
     }
 
+    private boolean isOnFinishMsg(int mouseX, int mouseY) {
+        var width = this.textRenderer.getWidth(DOWNLOAD_FINISHED);
+        var x = (this.width - width) / 2;
+        return this.w > 0 && this.h > 0 && this.deliverer.readyToRender() && x <= mouseX && x + width >= mouseX && this.y + this.h + 10 <= mouseY && this.y + this.h + 30 >= mouseY;
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0 && !this.dlStarted.get() && this.isOnImage((int) mouseX, (int) mouseY)) {
             this.client.setScreen(new ConfirmScreen(this::startDownload, DOWNLOAD_IMAGE, DOWNLOAD_IMAGE_MSG));
             return true;
+        }
+
+        if (button == 0 && this.dlFinish.messageDisplayable() && this.isOnFinishMsg((int) mouseX, (int) mouseY)) {
+            return this.handleTextClick(this.dlFinish.getMessage().getStyle());
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
@@ -128,7 +145,7 @@ public class GuessResultScreen extends UseTextureManagerScreen {
         this.dlStarted.set(true);
         this.fileDownload = new FileDownload(this.deliverer.getURL().toString());
         this.fileDownload.download(this.out, throwable -> {
-            this.display.sendError(throwable);
+            this.display.sendMessage(throwable);
             this.dlStarted.set(false);
         });
     }
@@ -148,7 +165,7 @@ public class GuessResultScreen extends UseTextureManagerScreen {
 
     private void onDLFinished() {
         this.dlStarted.set(false);
-        this.display.sendError(Language.getInstance().get(AkiCraft.MOD_ID + ".dl.fin"));
+        this.dlFinish.sendMessage(DOWNLOAD_FINISHED.copy().styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, this.out.getAbsolutePath()))));
     }
 
     private void showGameResult(boolean yes) {
